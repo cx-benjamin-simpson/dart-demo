@@ -3,6 +3,7 @@ import 'vulnerabilities/owasp_vulnerabilities.dart';
 import 'models/pii_data.dart';
 import 'services/user_service.dart';
 import 'services/config_service.dart';
+import 'services/file_service.dart';
 
 void main(List<String> arguments) async {
   print('OWASP Top 10 Vulnerabilities Demo with PII Handling');
@@ -32,9 +33,10 @@ Future<void> showMenu() async {
     print('12. View Sample PII Data');
     print('13. User Service Vulnerabilities');
     print('14. Configuration Service Vulnerabilities');
+    print('15. File Service Path Traversal');
     print('0.  Exit');
     
-    stdout.write('\nEnter your choice (0-14): ');
+    stdout.write('\nEnter your choice (0-15): ');
     String? choice = stdin.readLineSync();
     
     switch (choice) {
@@ -79,6 +81,9 @@ Future<void> showMenu() async {
         break;
       case '14':
         demonstrateConfigServiceVulnerabilities();
+        break;
+      case '15':
+        await demonstrateFileServiceVulnerabilities();
         break;
       case '0':
         print('\nGoodbye! Remember to secure your applications!');
@@ -224,4 +229,92 @@ void demonstrateConfigServiceVulnerabilities() {
   
   // Create default insecure configuration
   ConfigService.createDefaultConfig();
+}
+
+Future<void> demonstrateFileServiceVulnerabilities() async {
+  print('\nFile Service Path Traversal Vulnerabilities');
+  print('=' * 60);
+  
+  // Create a test file first
+  File('test_file.txt').writeAsStringSync('This is a test file with sensitive data');
+  
+  // Normal file access
+  print('\n1. Normal file access:');
+  FileService.setUserInput('test_file.txt');
+  String content = await FileService.readFile();
+  print('File content: $content');
+  
+  // Path traversal vulnerability - accessing parent directory
+  print('\n2. Path traversal - accessing parent directory:');
+  FileService.setUserInput('../test_file.txt');
+  await FileService.readFile();
+  
+  // Path traversal vulnerability - accessing system files
+  print('\n3. Path traversal - attempting to access system files:');
+  FileService.setUserInput('../../../etc/passwd');
+  await FileService.readFile();
+  
+  // Path traversal vulnerability - accessing config files
+  print('\n4. Path traversal - accessing config files:');
+  FileService.setUserInput('../config.json');
+  await FileService.readFile();
+  
+  // Path traversal vulnerability - writing to unauthorized locations
+  print('\n5. Path traversal - writing to unauthorized location:');
+  FileService.setUserInput('../malicious_file.txt');
+  await FileService.writeFile('Malicious content written to unauthorized location');
+  
+  // Path traversal vulnerability - creating directories
+  print('\n6. Path traversal - creating unauthorized directories:');
+  FileService.setUserInput('../unauthorized_directory');
+  await FileService.createUserDirectory();
+  
+  // Path traversal vulnerability - copying files
+  print('\n7. Path traversal - copying files to unauthorized location:');
+  FileService.setUserInput('test_file.txt');
+  await FileService.copyFile('../stolen_file.txt');
+  
+  // Path traversal vulnerability - deleting files
+  print('\n8. Path traversal - attempting to delete system files:');
+  FileService.setUserInput('../../../important_system_file.txt');
+  await FileService.deleteFile();
+  
+  // Path traversal vulnerability - exporting data
+  print('\n9. Path traversal - exporting data to unauthorized location:');
+  FileService.setUserInput('../stolen_data.json');
+  await FileService.exportData('{"ssn": "123-45-6789", "credit_card": "4111-1111-1111-1111"}');
+  
+  // Path traversal vulnerability - importing data
+  print('\n10. Path traversal - importing from unauthorized location:');
+  FileService.setUserInput('../sensitive_data.json');
+  await FileService.importData();
+  
+  // Path traversal vulnerability - processing files
+  print('\n11. Path traversal - processing files from unauthorized location:');
+  FileService.setUserInput('../user_data.txt');
+  await FileService.processUserFile();
+  
+  // Path traversal vulnerability - file validation
+  print('\n12. Path traversal - validating files from unauthorized location:');
+  FileService.setUserInput('../system_config.txt');
+  await FileService.validateFile();
+  
+  // Path traversal vulnerability - searching files
+  print('\n13. Path traversal - searching in unauthorized locations:');
+  List<String> files = await FileService.searchFiles('passwd');
+  print('Found files: $files');
+  
+  // Path traversal vulnerability - getting file info
+  print('\n14. Path traversal - getting info about unauthorized files:');
+  FileService.setUserInput('../.env');
+  Map<String, dynamic> fileInfo = await FileService.getFileInfo();
+  print('File info: $fileInfo');
+  
+  // Path traversal vulnerability - creating backups
+  print('\n15. Path traversal - creating backups in unauthorized locations:');
+  FileService.setUserInput('../sensitive_file.txt');
+  await FileService.createBackup();
+  
+  print('\nPath traversal vulnerabilities demonstrated!');
+  print('These vulnerabilities allow access to files outside the intended directory.');
 } 
