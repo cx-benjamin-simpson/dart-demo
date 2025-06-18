@@ -1,0 +1,20 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "build/**"
+    - ".dart_tool/**"
+
+linter:
+  rules:
+    # Disable some rules for demonstration purposes
+    avoid_print: false  # Allow print statements for demo output
+    prefer_const_constructors: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    unnecessary_const: true
+    unnecessary_new: true
+    unnecessary_this: true
+    use_key_in_widget_constructors: true 
